@@ -1,0 +1,171 @@
+#!/bin/bash
+
+if [ "$1" = "" ]; then
+	echo
+	echo Easy-Git 1.0
+	echo "(c)2019 by Matthias Rossmy"
+	echo This program is distributed under the MIT license
+	echo
+	echo Usage:
+	echo
+	echo "$(basename ${BASH_SOURCE[0]}) new <dirname>    //create new git repo"
+	echo "$(basename ${BASH_SOURCE[0]}) clone <URL>      //clone repo"
+	echo "$(basename ${BASH_SOURCE[0]}) pull             //update repo from server"
+	echo "$(basename ${BASH_SOURCE[0]}) commit           //commit changes"
+	echo "$(basename ${BASH_SOURCE[0]}) amend            //amend the last commit"
+	echo "$(basename ${BASH_SOURCE[0]}) push [<remote-branch>] //push local commits to server"
+	echo "$(basename ${BASH_SOURCE[0]}) tag <name>       //set a tag to the last commit"
+	echo "$(basename ${BASH_SOURCE[0]}) branches         //list all branches"
+	echo "$(basename ${BASH_SOURCE[0]}) usebranch <name> //use a specific branch (create if not exist)"
+	echo "$(basename ${BASH_SOURCE[0]}) delbranch <name> //delete branch"
+	echo "$(basename ${BASH_SOURCE[0]}) log [<ref>]      //show history (without ref everything is shown)"
+	echo "$(basename ${BASH_SOURCE[0]}) goto <commit-ID> //bring working dir to specific commit"
+	echo "$(basename ${BASH_SOURCE[0]}) pick <commit-ID> //import commit from other branch into this branch"
+	echo
+	exit
+fi
+
+if [ "$1" = "new" ]; then
+	mkdir $2
+	cd $2
+	git init
+fi
+
+if [ "$1" = "clone" ]; then
+	git clone "$2"
+fi
+
+if [ "$1" = "pull" ]; then
+	git fetch
+	LOCALBRANCH=$(git symbolic-ref --short HEAD)
+	if [ $(git branch --list -r origin/$LOCALBRANCH | wc -l) -ne 0 ]; then
+		#echo local branch exists on server
+		REMOTEBRANCH=$LOCALBRANCH
+	else
+		#echo local branch does not exist on server
+		echo Remote branches:
+		git branch -r
+		echo "Rebase local commits on which branch? (leave empty to skip rebase)"
+		echo -n "origin/"
+		read REMOTEBRANCH
+	fi
+	if [ "$REMOTEBRANCH" != "" ]; then
+		git diff --quiet HEAD
+		STASH=$?
+		if [ $STASH -ne 0 ]; then	
+			git stash	
+		fi
+		git rebase -X theirs origin/$REMOTEBRANCH
+		if [ $STASH -ne 0 ]; then	
+			git cherry-pick -n -m1 --strategy=recursive -Xtheirs stash
+			git stash drop -q
+		fi
+	fi
+fi
+
+if [ "$1" = "commit" ] || [ "$1" = "c" ] || [ "$1" = "amend" ]; then
+	if [ $(git ls-files -m | wc -l) -ne 0 ]; then
+		echo These files will be committed:
+		git ls-files -m
+		ADDITIONAL=" additionally"
+	fi
+	if [ $(git ls-files --others | wc -l) -ne 0 ]; then
+		echo These files are not yet selected for commit:
+		git ls-files --others
+		echo "...which of these files should be selected$ADDITIONAL? (separated by space, leave empty to add no more files)"
+		read -e FILES
+		git add $FILES 2>/dev/null
+	fi
+	if [ "$1" = "amend" ]; then
+		COMMITOPTIONS="--amend"
+	fi
+	git commit -a $COMMITOPTIONS
+fi
+
+if [ "$1" = "push" ]; then
+	LOCALBRANCH=$(git symbolic-ref --short HEAD)
+	if [ "$2" = "" ]; then
+		if [ $(git branch --list -r origin/$LOCALBRANCH | wc -l) -ne 0 ]; then
+			#echo local branch exists on server
+			REMOTEBRANCH=$LOCALBRANCH
+		else
+			#echo local branch does not exist on server
+			echo Remote branches:
+			git branch -r
+			echo "Push to which branch? (leave empty to create $LOCALBRANCH)"
+			echo -n "origin/"
+			read REMOTEBRANCH
+			if [ "$REMOTEBRANCH" = "" ]; then
+				REMOTEBRANCH=$LOCALBRANCH
+			fi
+		fi
+	else
+		REMOTEBRANCH=$2
+	fi
+	#if REMOTEBRANCH exists: rebase local commits on it
+	if [ $(git branch --list -r origin/$REMOTEBRANCH | wc -l) -ne 0 ]; then
+		git diff --quiet HEAD
+		STASH=$?
+		if [ $STASH -ne 0 ]; then	
+			git stash
+		fi
+		git fetch
+		git rebase -X theirs origin/$REMOTEBRANCH
+		if [ $STASH -ne 0 ]; then	
+			git cherry-pick -n -m1 --strategy=recursive -Xtheirs stash
+			git stash drop -q
+		fi
+	fi
+	git push origin HEAD:$REMOTEBRANCH --tags
+fi
+
+if [ "$1" = "tag" ]; then
+	git tag -f -a "$2" -m "$2"
+fi
+
+if [ "$1" = "branches" ] || [ "$1" = "bs" ]; then
+	git branch -a
+fi
+
+if [ "$1" = "usebranch" ] || [ "$1" = "b" ]; then
+	git checkout -q $2 2>/dev/null
+	git checkout -q -b $2 2>/dev/null
+	echo You are now on $(git symbolic-ref --short HEAD)
+fi
+
+if [ "$1" = "delbranch" ]; then
+	if [ "$(git symbolic-ref --short HEAD)" = "$2" ]; then
+		git checkout -q master
+		echo You are now on $(git symbolic-ref --short HEAD)
+	fi
+	git branch -D $2
+fi
+
+if [ "$1" = "log" ] || [ "$1" = "l" ]; then
+	if [ "$2" = "" ]; then
+		WHAT="--all --reflog"
+	else
+		WHAT="${@:2}"
+	fi
+	if [ "$(tput cols)" -lt "120" ]; then
+		# 2 lines
+		git --no-pager log --reverse --pretty=format:"%cd %s%n%C(dim)%<(8,trunc)%p-> %H%Creset%Cgreen%d%Creset" --date=short $WHAT
+	elif [ "$(tput cols)" -lt "170" ]; then
+		# 1 line
+		git --no-pager log --reverse --pretty=format:"%cd %C(dim)%<(5,trunc)%p> %H%Creset %s%Cgreen%d%Creset" --date=short $WHAT
+	else
+		# 1 line with both parents
+		git --no-pager log --reverse --pretty=format:"%cd %C(dim)%<(15,trunc)%p -> %H%Creset %s%Cgreen%d%Creset" --date=short $WHAT
+	fi
+	echo 
+	echo You are currently on $(git symbolic-ref --short HEAD)
+fi
+
+if [ "$1" = "goto" ]; then
+	git reset --hard $2
+fi
+
+if [ "$1" = "pick" ]; then
+	git cherry-pick --strategy=recursive -X theirs $2
+fi
+
