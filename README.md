@@ -11,5 +11,6 @@ commands that are needed in daily work, e.g. commit, push, log and manage branch
 case for almost all users. If you want to pull and push from/to multiple servers from a single local repository, you will still need the basic Git.
 
 ## Installation
-Easy-Git is only available for Linux and Unix. Simply create a symlink to **eg** in a directory that is in the PATH variable, e.g. /usr/bin  
+Easy-Git is only available for Linux and Unix. Choose a directory that is in the PATH variable (e.g. /usr/bin) and either copy **eg** there or create a symlink to it.
+Make sure that eg has executable permission. That should be the case if you cloned the repo, but if you downloaded the ZIP file the permission must be set manually.  
 To get a list of available commands, run eg without parameters.
