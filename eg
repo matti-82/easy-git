@@ -116,7 +116,12 @@ if [ "$1" = "push" ]; then
 			git stash drop -q
 		fi
 	fi
-	git push origin HEAD:$REMOTEBRANCH --tags
+	${BASH_SOURCE[0]} log HEAD
+	echo "...push that? (y/n)"
+	read CONFIRM
+	if [ "$CONFIRM" != "n" ]; then
+		git push origin HEAD:$REMOTEBRANCH --tags
+	fi
 fi
 
 if [ "$1" = "tag" ]; then
@@ -158,7 +163,9 @@ if [ "$1" = "log" ] || [ "$1" = "l" ]; then
 		git --no-pager log --reverse --pretty=format:"%cd %C(dim)%<(15,trunc)%p -> %H%Creset %s%Cgreen%d%Creset" --date=short $WHAT
 	fi
 	echo 
-	echo You are currently on $(git symbolic-ref --short HEAD)
+	if [ "$2" = "" ]; then
+		echo You are currently on $(git symbolic-ref --short HEAD)
+	fi
 fi
 
 if [ "$1" = "goto" ]; then
