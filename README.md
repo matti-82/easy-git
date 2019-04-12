@@ -12,4 +12,4 @@ case for almost all users. If you want to pull and push from/to multiple servers
 
 ## Installation
 Easy-Git is only available for Linux and Unix. Simply create a symlink to **eg** in a directory that is in the PATH variable, e.g. /usr/bin  
-To get a list of available commands, simply run eg without parameters.
+To get a list of available commands, run eg without parameters.
