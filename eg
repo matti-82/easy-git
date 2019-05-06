@@ -84,6 +84,7 @@ fi
 
 if [ "$1" = "push" ]; then
 	LOCALBRANCH=$(git symbolic-ref --short HEAD)
+	git fetch
 	if [ "$2" = "" ]; then
 		if [ $(git branch --list -r origin/$LOCALBRANCH | wc -l) -ne 0 ]; then
 			#echo local branch exists on server
@@ -109,14 +110,18 @@ if [ "$1" = "push" ]; then
 		if [ $STASH -ne 0 ]; then	
 			git stash
 		fi
-		git fetch
 		git rebase -X theirs origin/$REMOTEBRANCH
 		if [ $STASH -ne 0 ]; then	
 			git cherry-pick -n -m1 --strategy=recursive -Xtheirs stash
 			git stash drop -q
 		fi
+		echo
+		${BASH_SOURCE[0]} log origin/$REMOTEBRANCH..HEAD
+	else
+		echo
+		${BASH_SOURCE[0]} log HEAD
 	fi
-	${BASH_SOURCE[0]} log HEAD
+	echo
 	echo "...push that? (y/n)"
 	read CONFIRM
 	if [ "$CONFIRM" != "n" ]; then
