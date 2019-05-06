@@ -14,7 +14,7 @@ if [ "$1" = "" ]; then
 	echo "$(basename ${BASH_SOURCE[0]}) commit           //commit changes"
 	echo "$(basename ${BASH_SOURCE[0]}) amend            //amend the last commit"
 	echo "$(basename ${BASH_SOURCE[0]}) push [<remote-branch>] //push local commits to server"
-	echo "$(basename ${BASH_SOURCE[0]}) tag <name>       //set a tag to the last commit"
+	echo "$(basename ${BASH_SOURCE[0]}) tag <name> [<commit-ID>] //set a tag to a commit"
 	echo "$(basename ${BASH_SOURCE[0]}) branches         //list all branches"
 	echo "$(basename ${BASH_SOURCE[0]}) usebranch <name> //use a specific branch (create if not exist)"
 	echo "$(basename ${BASH_SOURCE[0]}) delbranch <name> //delete branch"
@@ -120,12 +120,13 @@ if [ "$1" = "push" ]; then
 	echo "...push that? (y/n)"
 	read CONFIRM
 	if [ "$CONFIRM" != "n" ]; then
-		git push origin HEAD:$REMOTEBRANCH --tags
+		git push origin HEAD:$REMOTEBRANCH --tags --force
 	fi
 fi
 
 if [ "$1" = "tag" ]; then
-	git tag -f -a "$2" -m "$2"
+	#git tag -f -a "$2" -m "$2"
+	git tag -f $2 $3
 fi
 
 if [ "$1" = "branches" ] || [ "$1" = "bs" ]; then
