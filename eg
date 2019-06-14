@@ -196,9 +196,9 @@ if [ "$1" = "changes" ] || [ "$1" = "d" ]; then
 	echo
 	if [ "$2" = "" ]; then
 		git status -s
-		git --no-pager diff --diff-algorithm=patience --color-words -U4 HEAD | colrm $(( $(tput cols) + 1 ))
+		git --no-pager diff --diff-algorithm=patience --color-words -U4 HEAD
 	else
-		git --no-pager show --diff-algorithm=patience --color-words -U4 $2 | colrm $(( $(tput cols) + 1 ))
+		git --no-pager show --diff-algorithm=patience --color-words -U4 $2
 	fi
 fi
 
