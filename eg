@@ -175,15 +175,15 @@ if [ "$1" = "log" ] || [ "$1" = "l" ]; then
 	else
 		WHAT="${@:2}"
 	fi
-	if [ "$(tput cols)" -lt "120" ]; then
-		# 2 lines
-		git --no-pager log --reverse --pretty=format:"%cd %s%n%C(dim)%<(8,trunc)%p-> %H%Creset%Cgreen%d%Creset" --date=short $WHAT
+	if [ "$(tput cols)" -lt "110" ]; then
+		# minimal
+		git --no-pager log --reverse --pretty=format:"%C(dim)%<(5,trunc)%p> %h%C(bold cyan)%d%Creset %s" --date=short --abbrev=16 $WHAT | colrm $(( $(tput cols) + 1 ))
 	elif [ "$(tput cols)" -lt "170" ]; then
-		# 1 line
-		git --no-pager log --reverse --pretty=format:"%cd %C(dim)%<(5,trunc)%p> %H%Creset %s%Cgreen%d%Creset" --date=short $WHAT
+		# with date
+		git --no-pager log --reverse --pretty=format:"%cd %C(dim)%<(5,trunc)%p> %h%C(bold cyan)%d%Creset %s" --date=short --abbrev=16 $WHAT | colrm $(( $(tput cols) + 1 ))
 	else
-		# 1 line with both parents
-		git --no-pager log --reverse --pretty=format:"%cd %C(dim)%<(15,trunc)%p -> %H%Creset %s%Cgreen%d%Creset" --date=short $WHAT
+		# with date, both parents and full hash
+		git --no-pager log --reverse --pretty=format:"%cd %C(dim)%<(13,trunc)%p -> %H%C(bold cyan)%d%Creset %s" --date=short --abbrev=6 $WHAT | colrm $(( $(tput cols) + 1 ))
 	fi
 	echo 
 	if [ "$2" = "" ]; then
