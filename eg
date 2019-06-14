@@ -2,7 +2,7 @@
 
 if [ "$1" = "" ]; then
 	echo
-	echo Easy-Git 1.0
+	echo Easy-Git 1.1
 	echo "(c)2019 by Matthias Rossmy"
 	echo This program is distributed under the MIT license
 	echo
@@ -10,19 +10,20 @@ if [ "$1" = "" ]; then
 	echo
 	echo "$(basename ${BASH_SOURCE[0]}) new <dirname>    //create new git repo"
 	echo "$(basename ${BASH_SOURCE[0]}) clone <URL>      //clone repo"
+	echo "$(basename ${BASH_SOURCE[0]}) connect <URL>    //connect local repo with remote repo"
 	echo "$(basename ${BASH_SOURCE[0]}) pull             //update repo from server"
 	echo "$(basename ${BASH_SOURCE[0]}) commit           //commit changes"
 	echo "$(basename ${BASH_SOURCE[0]}) amend            //amend the last commit"
 	echo "$(basename ${BASH_SOURCE[0]}) push [<remote-branch>] //push local commits to server"
-	echo "$(basename ${BASH_SOURCE[0]}) tag <name> [<commit-ID>] //set a tag to a commit"
+	echo "$(basename ${BASH_SOURCE[0]}) tag [<name> [<commit-ID>]] //set a tag to a commit"
 	echo "$(basename ${BASH_SOURCE[0]}) branches         //list all branches"
 	echo "$(basename ${BASH_SOURCE[0]}) usebranch <name> //use a specific branch (create if not exist)"
 	echo "$(basename ${BASH_SOURCE[0]}) delbranch <name> //delete branch"
 	echo "$(basename ${BASH_SOURCE[0]}) log [<ref>]      //show history (without ref everything is shown)"
+	echo "$(basename ${BASH_SOURCE[0]}) changes [<commit-ID>] //show changes in working dir or of commit"
 	echo "$(basename ${BASH_SOURCE[0]}) goto <commit-ID> //bring working dir to specific commit"
 	echo "$(basename ${BASH_SOURCE[0]}) pick <commit-ID> //import commit from other branch into this branch"
 	echo
-	exit
 fi
 
 if [ "$1" = "new" ]; then
@@ -35,6 +36,11 @@ if [ "$1" = "clone" ]; then
 	git clone "$2"
 fi
 
+if [ "$1" = "connect" ]; then
+	git status 2>/dev/null || git init
+	git remote add -f origin "$2" && git reset --merge origin/master
+fi
+
 if [ "$1" = "pull" ]; then
 	git fetch
 	LOCALBRANCH=$(git symbolic-ref --short HEAD)
@@ -45,7 +51,7 @@ if [ "$1" = "pull" ]; then
 		#echo local branch does not exist on server
 		echo Remote branches:
 		git branch -r
-		echo "Rebase local commits on which branch? (leave empty to skip rebase)"
+		echo "Rebase local commits onto which branch? (leave empty to skip rebase)"
 		echo -n "origin/"
 		read REMOTEBRANCH
 	fi
@@ -76,10 +82,15 @@ if [ "$1" = "commit" ] || [ "$1" = "c" ] || [ "$1" = "amend" ]; then
 		read -e FILES
 		git add $FILES 2>/dev/null
 	fi
-	if [ "$1" = "amend" ]; then
-		COMMITOPTIONS="--amend"
+	${BASH_SOURCE[0]} changes
+	echo "...commit that? (y/n)"
+	read CONFIRM
+	if [ "$CONFIRM" != "n" ]; then
+		if [ "$1" = "amend" ]; then
+			COMMITOPTIONS="--amend"
+		fi
+		git commit -a $COMMITOPTIONS
 	fi
-	git commit -a $COMMITOPTIONS
 fi
 
 if [ "$1" = "push" ]; then
@@ -130,8 +141,14 @@ if [ "$1" = "push" ]; then
 fi
 
 if [ "$1" = "tag" ]; then
-	#git tag -f -a "$2" -m "$2"
-	git tag -f $2 $3
+	TAGNAME="$2"
+	if [ "$TAGNAME" = "" ]; then
+		git tag
+		echo New tag name:
+		read TAGNAME
+	fi
+	#git tag -f -a -m "$TAGNAME" "$TAGNAME" $3
+	git tag -f "$TAGNAME" $3
 fi
 
 if [ "$1" = "branches" ] || [ "$1" = "bs" ]; then
@@ -171,6 +188,17 @@ if [ "$1" = "log" ] || [ "$1" = "l" ]; then
 	echo 
 	if [ "$2" = "" ]; then
 		echo You are currently on $(git symbolic-ref --short HEAD)
+	fi
+fi
+
+if [ "$1" = "changes" ] || [ "$1" = "d" ]; then
+	for i in {1..80}; do echo -n =; done
+	echo
+	if [ "$2" = "" ]; then
+		git status -s
+		git --no-pager diff --diff-algorithm=patience --color-words -U4 HEAD | colrm $(( $(tput cols) + 1 ))
+	else
+		git --no-pager show --diff-algorithm=patience --color-words -U4 $2 | colrm $(( $(tput cols) + 1 ))
 	fi
 fi
 
