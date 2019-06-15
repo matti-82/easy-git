@@ -175,16 +175,7 @@ if [ "$1" = "log" ] || [ "$1" = "l" ]; then
 	else
 		WHAT="${@:2}"
 	fi
-	if [ "$(tput cols)" -lt "110" ]; then
-		# minimal
-		git --no-pager log --reverse --pretty=format:"%C(dim)%<(5,trunc)%p> %h%C(bold cyan)%d%Creset %s" --date=short --abbrev=16 $WHAT | colrm $(( $(tput cols) + 1 ))
-	elif [ "$(tput cols)" -lt "170" ]; then
-		# with date
-		git --no-pager log --reverse --pretty=format:"%cd %C(dim)%<(5,trunc)%p> %h%C(bold cyan)%d%Creset %s" --date=short --abbrev=16 $WHAT | colrm $(( $(tput cols) + 1 ))
-	else
-		# with date, both parents and full hash
-		git --no-pager log --reverse --pretty=format:"%cd %C(dim)%<(13,trunc)%p -> %H%C(bold cyan)%d%Creset %s" --date=short --abbrev=6 $WHAT | colrm $(( $(tput cols) + 1 ))
-	fi
+	git --no-pager log --reverse --date=short --abbrev=16 --pretty=tformat:'%Creset%cd %C(dim)%<(5,trunc)%p> %h%Creset %H: %C(bold)%<(80,trunc)%s§%C(cyan)%D%Creset' $WHAT | git name-rev --stdin --name-only --refs='refs/?e*[!H][!E][!A][!D]' | sed -e s:remotes/::g | sed -e 's:~[0-9]*::g' | sed -e 's:\^[0-9]*::g' | sed -e 's:      ::g' | column -t -s § | colrm $(( $(tput cols) + 1 ))
 	echo 
 	if [ "$2" = "" ]; then
 		echo You are currently on $(git symbolic-ref --short HEAD)
