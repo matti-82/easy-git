@@ -173,7 +173,7 @@ fi
 
 if [ "$1" = "log" ] || [ "$1" = "l" ]; then
 	if [ "$2" = "" ]; then
-		WHAT="--all --reflog"
+		WHAT="--all"
 	else
 		WHAT="${@:2}"
 	fi
@@ -207,7 +207,8 @@ if [ "$1" = "changes" ] || [ "$1" = "d" ]; then
 fi
 
 if [ "$1" = "goto" ]; then
-	git reset --hard $2
+	git reset -q --hard
+	git checkout -q $2
 fi
 
 if [ "$1" = "pick" ]; then
