@@ -2,7 +2,7 @@
 
 if [ "$1" = "" ]; then
 	echo
-	echo Easy-Git 1.1
+	echo Easy-Git 1.2
 	echo "(c)2019 by Matthias Rossmy"
 	echo This program is distributed under the MIT license
 	echo
@@ -20,9 +20,11 @@ if [ "$1" = "" ]; then
 	echo "$(basename ${BASH_SOURCE[0]}) usebranch <name> //use a specific branch (create if not exist)"
 	echo "$(basename ${BASH_SOURCE[0]}) delbranch <name> //delete branch"
 	echo "$(basename ${BASH_SOURCE[0]}) log [<ref>]      //show history (without ref everything is shown)"
+	echo "$(basename ${BASH_SOURCE[0]}) show <commit-ID> <file> //show file of commit"
 	echo "$(basename ${BASH_SOURCE[0]}) changes [<commit-ID>] //show changes in working dir or of commit"
 	echo "$(basename ${BASH_SOURCE[0]}) goto <commit-ID> //bring working dir to specific commit"
 	echo "$(basename ${BASH_SOURCE[0]}) pick <commit-ID> //import commit from other branch into this branch"
+	echo "$(basename ${BASH_SOURCE[0]}) importbranch <name> //import other branch into this branch"
 	echo
 fi
 
@@ -182,6 +184,17 @@ if [ "$1" = "log" ] || [ "$1" = "l" ]; then
 	fi
 fi
 
+if [ "$1" = "show" ]; then
+	if [ "$3" = "" ]; then
+		git --no-pager show $2
+	else
+		for i in {1..80}; do echo -n =; done
+		echo
+		git --no-pager show $2:./$3
+		echo
+	fi
+fi
+
 if [ "$1" = "changes" ] || [ "$1" = "d" ]; then
 	for i in {1..80}; do echo -n =; done
 	echo
@@ -199,5 +212,9 @@ fi
 
 if [ "$1" = "pick" ]; then
 	git cherry-pick --strategy=recursive -X theirs $2
+fi
+
+if [ "$1" = "importbranch" ]; then
+	git merge --strategy=recursive -X theirs --no-edit $2
 fi
 
