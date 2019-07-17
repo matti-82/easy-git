@@ -2,30 +2,30 @@
 
 if [ "$1" = "" ]; then
 	echo
-	echo Easy-Git 1.2
+	echo Easy-Git 1.3
 	echo "(c)2019 by Matthias Rossmy"
 	echo This program is distributed under the MIT license
 	echo
 	echo Usage:
 	echo
-	echo "$(basename ${BASH_SOURCE[0]}) new <dirname>    //create new git repo"
-	echo "$(basename ${BASH_SOURCE[0]}) clone <URL>      //clone repo"
-	echo "$(basename ${BASH_SOURCE[0]}) connect <URL>    //connect local repo with remote repo"
-	echo "$(basename ${BASH_SOURCE[0]}) pull             //update repo from server"
-	echo "$(basename ${BASH_SOURCE[0]}) commit           //commit changes"
-	echo "$(basename ${BASH_SOURCE[0]}) amend            //amend the last commit"
-	echo "$(basename ${BASH_SOURCE[0]}) push [<remote-branch>] //push local commits to server"
+	echo "$(basename ${BASH_SOURCE[0]}) new <dirname>              //create new git repo"
+	echo "$(basename ${BASH_SOURCE[0]}) clone <URL>                //clone repo"
+	echo "$(basename ${BASH_SOURCE[0]}) connect <URL>              //connect local repo with remote repo"
+	echo "$(basename ${BASH_SOURCE[0]}) pull                       //update repo from server"
+	echo "$(basename ${BASH_SOURCE[0]}) commit                     //commit changes"
+	echo "$(basename ${BASH_SOURCE[0]}) amend                      //amend the last commit"
+	echo "$(basename ${BASH_SOURCE[0]}) push [<remote-branch>]     //push local commits to server"
 	echo "$(basename ${BASH_SOURCE[0]}) tag [<name> [<commit-ID>]] //set a tag to a commit"
-	echo "$(basename ${BASH_SOURCE[0]}) branches         //list all branches"
-	echo "$(basename ${BASH_SOURCE[0]}) usebranch <name> //use a specific branch (create if not exist)"
-	echo "$(basename ${BASH_SOURCE[0]}) delbranch <name> //delete branch"
-	echo "$(basename ${BASH_SOURCE[0]}) log [<ref>]      //show history (without ref everything is shown)"
-	echo "$(basename ${BASH_SOURCE[0]}) show <commit-ID> <file> //show file of commit"
-	echo "$(basename ${BASH_SOURCE[0]}) changes [<commit-ID>] //show changes in working dir or of commit"
-	echo "$(basename ${BASH_SOURCE[0]}) goto <commit-ID> //bring working dir to specific commit"
-	echo "$(basename ${BASH_SOURCE[0]}) undo [local|<commit-ID>] //undo uncommitted/all local/single commit"
-	echo "$(basename ${BASH_SOURCE[0]}) pick <commit-ID> //import commit from other branch into this branch"
-	echo "$(basename ${BASH_SOURCE[0]}) importbranch <name> //import other branch into this branch"
+	echo "$(basename ${BASH_SOURCE[0]}) branches                   //list all branches"
+	echo "$(basename ${BASH_SOURCE[0]}) usebranch <name>           //use a specific branch (create if not exist)"
+	echo "$(basename ${BASH_SOURCE[0]}) delbranch <name>           //delete branch"
+	echo "$(basename ${BASH_SOURCE[0]}) log [<ref>]                //show history (without ref everything is shown)"
+	echo "$(basename ${BASH_SOURCE[0]}) show <commit-ID> <file>    //show file of commit"
+	echo "$(basename ${BASH_SOURCE[0]}) changes [<commit-ID>]      //show changes in working dir or of commit"
+	echo "$(basename ${BASH_SOURCE[0]}) goto <commit-ID>           //bring working dir to specific commit"
+	echo "$(basename ${BASH_SOURCE[0]}) undo [local|<commit-ID>]   //undo uncommitted/all local/single commit"
+	echo "$(basename ${BASH_SOURCE[0]}) pick <commit-ID>           //import commit from other branch into this branch"
+	echo "$(basename ${BASH_SOURCE[0]}) importbranch <name>        //import other branch into this branch"
 	echo
 fi
 
