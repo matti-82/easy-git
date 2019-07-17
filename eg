@@ -23,6 +23,7 @@ if [ "$1" = "" ]; then
 	echo "$(basename ${BASH_SOURCE[0]}) show <commit-ID> <file> //show file of commit"
 	echo "$(basename ${BASH_SOURCE[0]}) changes [<commit-ID>] //show changes in working dir or of commit"
 	echo "$(basename ${BASH_SOURCE[0]}) goto <commit-ID> //bring working dir to specific commit"
+	echo "$(basename ${BASH_SOURCE[0]}) undo [local|<commit-ID>] //undo uncommitted/all local/single commit"
 	echo "$(basename ${BASH_SOURCE[0]}) pick <commit-ID> //import commit from other branch into this branch"
 	echo "$(basename ${BASH_SOURCE[0]}) importbranch <name> //import other branch into this branch"
 	echo
@@ -43,7 +44,7 @@ if [ "$1" = "connect" ]; then
 	git remote add -f origin "$2" && git reset --merge origin/master
 fi
 
-if [ "$1" = "pull" ]; then
+if [ "$1" = "pull" ] || [ "$1" = "update" ] || [ "$1" = "u" ]; then
 	git fetch
 	LOCALBRANCH=$(git symbolic-ref --short HEAD)
 	if [ $(git branch --list -r origin/$LOCALBRANCH | wc -l) -ne 0 ]; then
@@ -177,7 +178,7 @@ if [ "$1" = "log" ] || [ "$1" = "l" ]; then
 	else
 		WHAT="${@:2}"
 	fi
-	git --no-pager log --reverse --date=short --abbrev=16 --pretty=tformat:'%cd %C(dim)%<(5,trunc)%p> %h%Creset %H: %<(80,trunc)%s§%D' $WHAT | git name-rev --stdin --name-only --refs='refs/?e*[!H][!E][!A][!D]' | sed -e s:remotes/::g | sed -e 's:~[0-9]*::g' | sed -e 's:\^[0-9]*::g' | sed -e 's:      ::g' | column -t -s § | colrm $(( $(tput cols) + 1 ))
+	git --no-pager log --reverse --date=short --abbrev=16 --pretty=tformat:'%cd %C(dim)%<(5,trunc)%p> %h%Creset §%H: %s%Cgreen%d%Creset' $WHAT | git name-rev --stdin --name-only --refs='refs/?e*[!H][!E][!A][!D]' | sed -e s:remotes/::g | sed -e s:§origin/::g | sed -e s:§::g | sed -e 's:~[0-9]*::g' | sed -e 's:\^[0-9]*::g'
 	echo 
 	if [ "$2" = "" ]; then
 		echo You are currently on $(git symbolic-ref --short HEAD)
@@ -209,6 +210,28 @@ fi
 if [ "$1" = "goto" ]; then
 	git reset -q --hard
 	git checkout -q $2
+fi
+
+if [ "$1" = "undo" ]; then
+	LOCALBRANCH=$(git symbolic-ref --short HEAD)
+	if [ "$2" = "" ]; then
+		git reset --hard
+	elif [ "$2" = "local" ]; then
+		if [ $(git branch --list -r origin/$LOCALBRANCH | wc -l) -ne 0 ]; then
+			#echo local branch exists on server
+			REMOTEBRANCH=$LOCALBRANCH
+		else
+			echo $LOCALBRANCH does not exist on server, resetting to master
+			REMOTEBRANCH=master
+		fi
+		git reset --hard origin/$REMOTEBRANCH
+	else
+		if [ $(git --no-pager log --pretty=tformat:'%h' $2.. | wc -l) -eq 0 ] && [ $(git --no-pager log --pretty=tformat:'%H' origin/$LOCALBRANCH 2>/dev/null | grep $2 | wc -l) -eq 0 ]; then
+			git reset --hard HEAD~1
+		else
+			git revert $2
+		fi
+	fi
 fi
 
 if [ "$1" = "pick" ]; then
