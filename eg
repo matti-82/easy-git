@@ -36,7 +36,7 @@ if [ "$1" = "new" ]; then
 fi
 
 if [ "$1" = "clone" ]; then
-	git clone "$2"
+	git clone --recursive "$2"
 fi
 
 if [ "$1" = "connect" ]; then
@@ -70,6 +70,7 @@ if [ "$1" = "pull" ] || [ "$1" = "update" ] || [ "$1" = "u" ]; then
 			git stash drop -q
 		fi
 	fi
+	git submodule update --recursive
 fi
 
 if [ "$1" = "commit" ] || [ "$1" = "c" ] || [ "$1" = "amend" ]; then
@@ -178,7 +179,7 @@ if [ "$1" = "log" ] || [ "$1" = "l" ]; then
 	else
 		WHAT="${@:2}"
 	fi
-	git --no-pager log --reverse --date=short --abbrev=16 --pretty=tformat:'%cd %C(dim)%<(5,trunc)%p> %h%Creset §%H: %s%Cgreen%d%Creset' $WHAT | git name-rev --stdin --name-only --refs='refs/?e*[!H][!E][!A][!D]' | sed -e s:remotes/::g | sed -e s:§origin/::g | sed -e s:§::g | sed -e 's:~[0-9]*::g' | sed -e 's:\^[0-9]*::g'
+	git --no-pager log --color=always --reverse --date=short --abbrev=16 --pretty=tformat:'%cd %C(dim)%<(5,trunc)%p> %h%Creset §%H: %s%Cgreen%d%Creset' $WHAT | git name-rev --stdin --name-only --refs='refs/?e*[!H][!E][!A][!D]' | sed -e s:remotes/::g | sed -e s:§origin/::g | sed -e s:§::g | sed -e 's:~[0-9]*::g' | sed -e 's:\^[0-9]*::g'
 	echo 
 	if [ "$2" = "" ]; then
 		echo You are currently on $(git symbolic-ref --short HEAD)
