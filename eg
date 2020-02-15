@@ -12,8 +12,7 @@ if [ "$1" = "" ]; then
 	echo "$(basename ${BASH_SOURCE[0]}) clone <URL>                //clone repo"
 	echo "$(basename ${BASH_SOURCE[0]}) connect <URL>              //connect local repo with remote repo"
 	echo "$(basename ${BASH_SOURCE[0]}) pull                       //update repo from server"
-	echo "$(basename ${BASH_SOURCE[0]}) commit                     //commit changes"
-	echo "$(basename ${BASH_SOURCE[0]}) amend                      //amend the last commit"
+	echo "$(basename ${BASH_SOURCE[0]}) commit                     //commit changes or amend commit"
 	echo "$(basename ${BASH_SOURCE[0]}) push [<remote-branch>]     //push local commits to server"
 	echo "$(basename ${BASH_SOURCE[0]}) tag [<name> [<commit-ID>]] //set a tag to a commit"
 	echo "$(basename ${BASH_SOURCE[0]}) branches                   //list all branches"
@@ -73,27 +72,29 @@ if [ "$1" = "pull" ] || [ "$1" = "update" ] || [ "$1" = "u" ]; then
 	git submodule update --recursive
 fi
 
-if [ "$1" = "commit" ] || [ "$1" = "c" ] || [ "$1" = "amend" ]; then
-	if [ $(git ls-files -m | wc -l) -ne 0 ]; then
-		echo These files will be committed:
-		git ls-files -m
-		ADDITIONAL=" additionally"
-	fi
-	if [ $(git ls-files --others | wc -l) -ne 0 ]; then
-		echo These files are not yet selected for commit:
-		git ls-files --others
-		echo "...which of these files should be selected$ADDITIONAL? (separated by space, leave empty to add no more files)"
-		read -e FILES
-		git add $FILES 2>/dev/null
-	fi
-	${BASH_SOURCE[0]} changes
-	echo "...commit that? (y/n)"
-	read CONFIRM
-	if [ "$CONFIRM" != "n" ]; then
-		if [ "$1" = "amend" ]; then
-			COMMITOPTIONS="--amend"
+if [ "$1" = "commit" ] || [ "$1" = "c" ]; then
+	if ! gitg -c 2>/dev/null ; then
+		if [ $(git ls-files -m | wc -l) -ne 0 ]; then
+			echo These files will be committed:
+			git ls-files -m
+			ADDITIONAL=" additionally"
 		fi
-		git commit -a $COMMITOPTIONS
+		if [ $(git ls-files --others | wc -l) -ne 0 ]; then
+			echo These files are not yet selected for commit:
+			git ls-files --others
+			echo "...which of these files should be selected$ADDITIONAL? (separated by space, leave empty to add no more files)"
+			read -e FILES
+			git add $FILES 2>/dev/null
+		fi
+		${BASH_SOURCE[0]} changes
+		echo "...commit that? (y/n/a, a=amend)"
+		read CONFIRM
+		if [ "$CONFIRM" != "n" ]; then
+			if [ "$CONFIRM" = "a" ]; then
+				COMMITOPTIONS="--amend"
+			fi
+			git commit -a $COMMITOPTIONS
+		fi
 	fi
 fi
 
