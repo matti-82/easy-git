@@ -2,8 +2,8 @@
 
 if [ "$1" = "" ]; then
 	echo
-	echo Easy-Git 1.4
-	echo "(c)2019 by Matthias Rossmy"
+	echo Easy-Git 1.5
+	echo "(c)2019-2020 by Matthias Rossmy"
 	echo This program is distributed under the MIT license
 	echo
 	echo Usage:
@@ -119,28 +119,20 @@ if [ "$1" = "push" ]; then
 	else
 		REMOTEBRANCH=$2
 	fi
-	#if REMOTEBRANCH exists: rebase local commits on it
-	if [ $(git branch --list -r origin/$REMOTEBRANCH | wc -l) -ne 0 ]; then
-		git diff --quiet HEAD
-		STASH=$?
-		if [ $STASH -ne 0 ]; then	
-			git stash
+	if ! git push origin HEAD:$REMOTEBRANCH --tags 2>/dev/null ; then
+		#if REMOTEBRANCH exists: rebase local commits on it
+		if [ $(git branch --list -r origin/$REMOTEBRANCH | wc -l) -ne 0 ]; then
+			git diff --quiet HEAD
+			STASH=$?
+			if [ $STASH -ne 0 ]; then	
+				git stash
+			fi
+			git rebase -X theirs origin/$REMOTEBRANCH
+			if [ $STASH -ne 0 ]; then	
+				git cherry-pick -n -m1 --strategy=recursive -Xtheirs stash
+				git stash drop -q
+			fi
 		fi
-		git rebase -X theirs origin/$REMOTEBRANCH
-		if [ $STASH -ne 0 ]; then	
-			git cherry-pick -n -m1 --strategy=recursive -Xtheirs stash
-			git stash drop -q
-		fi
-		echo
-		${BASH_SOURCE[0]} log origin/$REMOTEBRANCH..HEAD
-	else
-		echo
-		${BASH_SOURCE[0]} log HEAD
-	fi
-	echo
-	echo "...push that? (y/n)"
-	read CONFIRM
-	if [ "$CONFIRM" != "n" ]; then
 		git push origin HEAD:$REMOTEBRANCH --tags --force
 	fi
 fi
