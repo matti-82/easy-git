@@ -2,7 +2,7 @@
 
 if [ "$1" = "" ]; then
 	echo
-	echo Easy-Git 1.6
+	echo Easy-Git 1.7
 	echo "(c)2019-2020 by Matthias Rossmy"
 	echo This program is distributed under the MIT license
 	echo
@@ -153,12 +153,14 @@ if [ "$1" = "branches" ] || [ "$1" = "bs" ]; then
 fi
 
 if [ "$1" = "usebranch" ] || [ "$1" = "b" ]; then
-	if ! git checkout -q -b $2 2>/dev/null; then
+	if git rev-parse --verify $2 2>/dev/null || git rev-parse --verify origin/$2 2>/dev/null; then
 		git commit -a -m "[work in progress]" >/dev/null
 		git checkout -q $2 2>/dev/null
 		if [ "$(git log --pretty=tformat:'%s' HEAD^..HEAD)" = "[work in progress]" ]; then
 			git reset --soft HEAD^
 		fi
+	else
+		git checkout -q -b $2 2>/dev/null
 	fi
 	echo You are now on $(git symbolic-ref --short HEAD)
 fi
