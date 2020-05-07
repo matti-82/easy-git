@@ -2,7 +2,7 @@
 
 if [ "$1" = "" ]; then
 	echo
-	echo Easy-Git 1.7
+	echo Easy-Git 1.8
 	echo "(c)2019-2020 by Matthias Rossmy"
 	echo This program is distributed under the MIT license
 	echo
@@ -12,7 +12,7 @@ if [ "$1" = "" ]; then
 	echo "$(basename ${BASH_SOURCE[0]}) clone <URL>                //clone repo"
 	echo "$(basename ${BASH_SOURCE[0]}) connect <URL>              //connect local repo with remote repo"
 	echo "$(basename ${BASH_SOURCE[0]}) pull                       //update repo from server"
-	echo "$(basename ${BASH_SOURCE[0]}) commit                     //commit changes or amend commit"
+	echo "$(basename ${BASH_SOURCE[0]}) commit [<tagname>]         //commit changes or amend commit"
 	echo "$(basename ${BASH_SOURCE[0]}) push [<remote-branch>]     //push local commits to server"
 	echo "$(basename ${BASH_SOURCE[0]}) tag [<name> [<commit-ID>]] //set a tag to a commit"
 	echo "$(basename ${BASH_SOURCE[0]}) branches                   //list all branches"
@@ -60,11 +60,11 @@ if [ "$1" = "pull" ] || [ "$1" = "update" ] || [ "$1" = "u" ]; then
 	if [ "$REMOTEBRANCH" != "" ]; then
 		git diff --quiet HEAD
 		STASH=$?
-		if [ $STASH -ne 0 ]; then	
-			git stash	
+		if [ $STASH -ne 0 ]; then
+			git stash
 		fi
 		git rebase -X theirs origin/$REMOTEBRANCH
-		if [ $STASH -ne 0 ]; then	
+		if [ $STASH -ne 0 ]; then
 			git cherry-pick -n -m1 --strategy=recursive -Xtheirs stash
 			git stash drop -q
 		fi
@@ -73,6 +73,7 @@ if [ "$1" = "pull" ] || [ "$1" = "update" ] || [ "$1" = "u" ]; then
 fi
 
 if [ "$1" = "commit" ] || [ "$1" = "c" ]; then
+	git add -u
 	if ! gitg -c 2>/dev/null ; then
 		if [ $(git ls-files -m | wc -l) -ne 0 ]; then
 			echo These files will be committed:
@@ -95,6 +96,9 @@ if [ "$1" = "commit" ] || [ "$1" = "c" ]; then
 			fi
 			git commit -a $COMMITOPTIONS
 		fi
+	fi
+	if [ "$2" != "" ]; then
+		git tag -f $2
 	fi
 fi
 
@@ -124,11 +128,11 @@ if [ "$1" = "push" ]; then
 		if [ $(git branch --list -r origin/$REMOTEBRANCH | wc -l) -ne 0 ]; then
 			git diff --quiet HEAD
 			STASH=$?
-			if [ $STASH -ne 0 ]; then	
+			if [ $STASH -ne 0 ]; then
 				git stash
 			fi
 			git rebase -X theirs origin/$REMOTEBRANCH
-			if [ $STASH -ne 0 ]; then	
+			if [ $STASH -ne 0 ]; then
 				git cherry-pick -n -m1 --strategy=recursive -Xtheirs stash
 				git stash drop -q
 			fi
