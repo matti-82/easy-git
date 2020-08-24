@@ -2,7 +2,7 @@
 
 if [ "$1" = "" ]; then
 	echo
-	echo Easy-Git 1.8
+	echo Easy-Git 1.9
 	echo "(c)2019-2020 by Matthias Rossmy"
 	echo This program is distributed under the MIT license
 	echo
@@ -123,22 +123,7 @@ if [ "$1" = "push" ]; then
 	else
 		REMOTEBRANCH=$2
 	fi
-	if ! git push origin HEAD:$REMOTEBRANCH --tags 2>/dev/null ; then
-		#if REMOTEBRANCH exists: rebase local commits on it
-		if [ $(git branch --list -r origin/$REMOTEBRANCH | wc -l) -ne 0 ]; then
-			git diff --quiet HEAD
-			STASH=$?
-			if [ $STASH -ne 0 ]; then
-				git stash
-			fi
-			git rebase -X theirs origin/$REMOTEBRANCH
-			if [ $STASH -ne 0 ]; then
-				git cherry-pick -n -m1 --strategy=recursive -Xtheirs stash
-				git stash drop -q
-			fi
-		fi
-		git push origin HEAD:$REMOTEBRANCH --tags --force
-	fi
+	git push origin HEAD:$REMOTEBRANCH --tags --force-with-lease
 fi
 
 if [ "$1" = "tag" ]; then
@@ -164,6 +149,7 @@ if [ "$1" = "usebranch" ] || [ "$1" = "b" ]; then
 			git reset --soft HEAD^
 		fi
 	else
+		echo Create new branch
 		git checkout -q -b $2 2>/dev/null
 	fi
 	echo You are now on $(git symbolic-ref --short HEAD)
