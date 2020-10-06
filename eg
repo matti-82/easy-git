@@ -2,7 +2,7 @@
 
 if [ "$1" = "" ]; then
 	echo
-	echo Easy-Git 1.9
+	echo Easy-Git 1.10
 	echo "(c)2019-2020 by Matthias Rossmy"
 	echo This program is distributed under the MIT license
 	echo
@@ -123,7 +123,7 @@ if [ "$1" = "push" ]; then
 	else
 		REMOTEBRANCH=$2
 	fi
-	git push origin HEAD:$REMOTEBRANCH --tags --force-with-lease
+	git push --set-upstream origin $REMOTEBRANCH --follow-tags --force-with-lease
 fi
 
 if [ "$1" = "tag" ]; then
@@ -142,6 +142,7 @@ if [ "$1" = "branches" ] || [ "$1" = "bs" ]; then
 fi
 
 if [ "$1" = "usebranch" ] || [ "$1" = "b" ]; then
+	git fetch
 	if git rev-parse --verify $2 2>/dev/null || git rev-parse --verify origin/$2 2>/dev/null; then
 		git commit -a -m "[work in progress]" >/dev/null
 		git checkout -q $2 2>/dev/null
