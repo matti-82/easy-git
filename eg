@@ -2,13 +2,13 @@
 
 if [ "$1" = "" ]; then
 	echo
-	echo Easy-Git 1.10
+	echo Easy-Git 1.11
 	echo "(c)2019-2020 by Matthias Rossmy"
 	echo This program is distributed under the MIT license
 	echo
 	echo Usage:
 	echo
-	echo "$(basename ${BASH_SOURCE[0]}) new <dirname>              //create new git repo"
+	echo "$(basename ${BASH_SOURCE[0]}) init [<dirname>]           //create new git repo"
 	echo "$(basename ${BASH_SOURCE[0]}) clone <URL>                //clone repo"
 	echo "$(basename ${BASH_SOURCE[0]}) connect <URL>              //connect local repo with remote repo"
 	echo "$(basename ${BASH_SOURCE[0]}) pull                       //update repo from server"
@@ -28,9 +28,11 @@ if [ "$1" = "" ]; then
 	echo
 fi
 
-if [ "$1" = "new" ]; then
-	mkdir $2
-	cd $2
+if [ "$1" = "init" ]; then
+	if [ "$2" != "" ]; then
+		mkdir $2
+		cd $2
+	fi
 	git init
 fi
 
