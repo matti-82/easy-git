@@ -105,9 +105,9 @@ if [ "$1" = "commit" ] || [ "$1" = "c" ]; then
 fi
 
 if [ "$1" = "push" ]; then
-	LOCALBRANCH=$(git symbolic-ref --short HEAD)
-	git fetch
 	if [ "$2" = "" ]; then
+		LOCALBRANCH=$(git symbolic-ref --short HEAD)
+		git fetch
 		if [ $(git branch --list -r origin/$LOCALBRANCH | wc -l) -ne 0 ]; then
 			#echo local branch exists on server
 			REMOTEBRANCH=$LOCALBRANCH
