@@ -2,7 +2,7 @@
 
 if [ "$1" = "" ]; then
 	echo
-	echo Easy-Git 1.11
+	echo Easy-Git 1.12
 	echo "(c)2019-2020 by Matthias Rossmy"
 	echo This program is distributed under the MIT license
 	echo
@@ -99,6 +99,7 @@ if [ "$1" = "commit" ] || [ "$1" = "c" ]; then
 			git commit -a $COMMITOPTIONS
 		fi
 	fi
+	git gc
 	if [ "$2" != "" ]; then
 		git tag -f $2
 	fi
@@ -164,6 +165,7 @@ if [ "$1" = "delbranch" ]; then
 		echo You are now on $(git symbolic-ref --short HEAD)
 	fi
 	git branch -D $2
+	git gc
 fi
 
 if [ "$1" = "log" ] || [ "$1" = "l" ]; then
