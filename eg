@@ -2,8 +2,8 @@
 
 if [ "$1" = "" ]; then
 	echo
-	echo Easy-Git 1.12
-	echo "(c)2019-2020 by Matthias Rossmy"
+	echo Easy-Git
+	echo "(c)2019-2021 by Matthias Rossmy"
 	echo This program is distributed under the MIT license
 	echo
 	echo Usage:
@@ -126,7 +126,7 @@ if [ "$1" = "push" ]; then
 	else
 		REMOTEBRANCH=$2
 	fi
-	git push --set-upstream origin $REMOTEBRANCH --follow-tags --force-with-lease
+	git push --set-upstream origin $REMOTEBRANCH --tags --force-with-lease
 fi
 
 if [ "$1" = "tag" ]; then
