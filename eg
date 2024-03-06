@@ -3,11 +3,12 @@
 if [ "$1" = "" ]; then
 	echo
 	echo Easy-Git
-	echo "(c)2019-2021 by Matthias Rossmy"
+	echo "(c)2019-2024 by Matthias Rossmy"
 	echo This program is distributed under the MIT license
 	echo
 	echo Usage:
 	echo
+	echo "$(basename ${BASH_SOURCE[0]}) setup                      //set up user to be able to commit"
 	echo "$(basename ${BASH_SOURCE[0]}) init [<dirname>]           //create new git repo"
 	echo "$(basename ${BASH_SOURCE[0]}) clone <URL>                //clone repo"
 	echo "$(basename ${BASH_SOURCE[0]}) connect <URL>              //connect local repo with remote repo"
@@ -25,7 +26,13 @@ if [ "$1" = "" ]; then
 	echo "$(basename ${BASH_SOURCE[0]}) undo [local|<commit-ID>]   //undo uncommitted/all local/single commit"
 	echo "$(basename ${BASH_SOURCE[0]}) pick <commit-ID>           //import commit from other branch into this branch"
 	echo "$(basename ${BASH_SOURCE[0]}) importbranch <name>        //import other branch into this branch"
+	echo "$(basename ${BASH_SOURCE[0]}) rebaseon <name>            //rebase onto other commit or branch"
 	echo
+fi
+
+if [ "$1" = "setup" ]; then
+	git config --global user.name $USER
+	git config --global user.email i.dont@want.mails	
 fi
 
 if [ "$1" = "init" ]; then
@@ -77,27 +84,28 @@ fi
 if [ "$1" = "commit" ] || [ "$1" = "c" ]; then
 	git add -u
 	if ! gitg -c 2>/dev/null ; then
-		if [ $(git ls-files -m | wc -l) -ne 0 ]; then
-			echo These files will be committed:
-			git ls-files -m
-			ADDITIONAL=" additionally"
-		fi
-		if [ $(git ls-files --others | wc -l) -ne 0 ]; then
-			echo These files are not yet selected for commit:
-			git ls-files --others
-			echo "...which of these files should be selected$ADDITIONAL? (separated by space, leave empty to add no more files)"
-			read -e FILES
-			git add $FILES 2>/dev/null
-		fi
-		${BASH_SOURCE[0]} changes
-		echo "...commit that? (y/n/a, a=amend)"
-		read CONFIRM
-		if [ "$CONFIRM" != "n" ]; then
-			if [ "$CONFIRM" = "a" ]; then
-				COMMITOPTIONS="--amend"
-			fi
-			git commit -a $COMMITOPTIONS
-		fi
+		echo gitg did not return SUCCESS. Are you sure that it is installed?
+#		if [ $(git ls-files -m | wc -l) -ne 0 ]; then
+#			echo These files will be committed:
+#			git ls-files -m
+#			ADDITIONAL=" additionally"
+#		fi
+#		if [ $(git ls-files --others | wc -l) -ne 0 ]; then
+#			echo These files are not yet selected for commit:
+#			git ls-files --others
+#			echo "...which of these files should be selected$ADDITIONAL? (separated by space, leave empty to add no more files)"
+#			read -e FILES
+#			git add $FILES 2>/dev/null
+#		fi
+#		${BASH_SOURCE[0]} changes
+#		echo "...commit that? (y/n/a, a=amend)"
+#		read CONFIRM
+#		if [ "$CONFIRM" != "n" ]; then
+#			if [ "$CONFIRM" = "a" ]; then
+#				COMMITOPTIONS="--amend"
+#			fi
+#			git commit -a $COMMITOPTIONS
+#		fi
 	fi
 	git gc
 	if [ "$2" != "" ]; then
@@ -236,5 +244,9 @@ fi
 
 if [ "$1" = "importbranch" ]; then
 	git merge --strategy=recursive -X theirs --no-edit $2
+fi
+
+if [ "$1" = "rebaseon" ]; then
+	git rebase --strategy=recursive -X theirs $2
 fi
 
