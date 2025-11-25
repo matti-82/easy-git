@@ -193,10 +193,7 @@ if [ "$1" = "show" ]; then
 	if [ "$3" = "" ]; then
 		git --no-pager show $2
 	else
-		for i in {1..80}; do echo -n =; done
-		echo
 		git --no-pager show $2:./$3
-		echo
 	fi
 fi
 
